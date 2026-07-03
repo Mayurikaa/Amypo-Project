@@ -10,7 +10,6 @@ import com.example.demo.repository.ProjectInitiativeRepository;
 import com.example.demo.repository.ProjectMilestoneRepository;
 import com.example.demo.repository.ProjectTaskRepository;
 import com.example.demo.repository.SystemAccountRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,22 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class ProjectInitiativeService {
 
     private final ProjectInitiativeRepository projectInitiativeRepository;
     private final ProjectMilestoneRepository projectMilestoneRepository;
     private final ProjectTaskRepository projectTaskRepository;
     private final SystemAccountRepository systemAccountRepository;
+
+    public ProjectInitiativeService(ProjectInitiativeRepository projectInitiativeRepository,
+                                     ProjectMilestoneRepository projectMilestoneRepository,
+                                     ProjectTaskRepository projectTaskRepository,
+                                     SystemAccountRepository systemAccountRepository) {
+        this.projectInitiativeRepository = projectInitiativeRepository;
+        this.projectMilestoneRepository = projectMilestoneRepository;
+        this.projectTaskRepository = projectTaskRepository;
+        this.systemAccountRepository = systemAccountRepository;
+    }
 
     @Transactional
     public ProjectInitiativeDto createInitiative(ProjectInitiativeDto dto) {

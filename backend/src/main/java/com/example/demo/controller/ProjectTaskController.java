@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.dto.ProjectTaskDto;
 import com.example.demo.service.ProjectTaskService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -15,10 +14,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
-@RequiredArgsConstructor
 public class ProjectTaskController {
 
     private final ProjectTaskService projectTaskService;
+
+    public ProjectTaskController(ProjectTaskService projectTaskService) {
+        this.projectTaskService = projectTaskService;
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('PROJECT_DIRECTOR', 'PROJECT_MANAGER')")

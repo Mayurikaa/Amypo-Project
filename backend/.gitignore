@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### TypeScript & JavaScript Build Artifacts ###
+backend/*.js
+backend/*.js.map
+backend/node_modules/
+
+# Target the specific extension files
+extension.js
+extension.js.map

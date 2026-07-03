@@ -7,19 +7,25 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ProjectInitiativeRepository;
 import com.example.demo.repository.ProjectMilestoneRepository;
 import com.example.demo.repository.ProjectTaskRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class ProjectMilestoneService {
 
     private final ProjectMilestoneRepository projectMilestoneRepository;
     private final ProjectInitiativeRepository projectInitiativeRepository;
     private final ProjectTaskRepository projectTaskRepository;
+
+    public ProjectMilestoneService(ProjectMilestoneRepository projectMilestoneRepository,
+                                    ProjectInitiativeRepository projectInitiativeRepository,
+                                    ProjectTaskRepository projectTaskRepository) {
+        this.projectMilestoneRepository = projectMilestoneRepository;
+        this.projectInitiativeRepository = projectInitiativeRepository;
+        this.projectTaskRepository = projectTaskRepository;
+    }
 
     @Transactional
     public ProjectMilestoneDto createMilestone(ProjectMilestoneDto dto) {

@@ -5,17 +5,19 @@ import com.example.demo.dto.AuthResponseDto;
 import com.example.demo.dto.SystemAccountDto;
 import com.example.demo.service.SystemAccountService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final SystemAccountService systemAccountService;
+
+    public AuthController(SystemAccountService systemAccountService) {
+        this.systemAccountService = systemAccountService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody AuthRequestDto dto) {

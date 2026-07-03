@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.dto.ProjectMilestoneDto;
 import com.example.demo.service.ProjectMilestoneService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -13,10 +12,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/milestones")
-@RequiredArgsConstructor
 public class ProjectMilestoneController {
 
     private final ProjectMilestoneService projectMilestoneService;
+
+    public ProjectMilestoneController(ProjectMilestoneService projectMilestoneService) {
+        this.projectMilestoneService = projectMilestoneService;
+    }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('PROJECT_DIRECTOR', 'PROJECT_MANAGER')")

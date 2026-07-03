@@ -9,19 +9,25 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ProjectTaskRepository;
 import com.example.demo.repository.SystemAccountRepository;
 import com.example.demo.repository.TaskSubmissionRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class TaskSubmissionService {
 
     private final TaskSubmissionRepository taskSubmissionRepository;
     private final ProjectTaskRepository projectTaskRepository;
     private final SystemAccountRepository systemAccountRepository;
+
+    public TaskSubmissionService(TaskSubmissionRepository taskSubmissionRepository,
+                                  ProjectTaskRepository projectTaskRepository,
+                                  SystemAccountRepository systemAccountRepository) {
+        this.taskSubmissionRepository = taskSubmissionRepository;
+        this.projectTaskRepository = projectTaskRepository;
+        this.systemAccountRepository = systemAccountRepository;
+    }
 
     @Transactional
     public TaskSubmissionDto submitWork(TaskSubmissionDto dto) {

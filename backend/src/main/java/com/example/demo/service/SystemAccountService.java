@@ -9,7 +9,6 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedActionException;
 import com.example.demo.config.JwtTokenProvider;
 import com.example.demo.repository.SystemAccountRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,12 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SystemAccountService {
 
     private final SystemAccountRepository systemAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+
+    public SystemAccountService(SystemAccountRepository systemAccountRepository,
+                                 PasswordEncoder passwordEncoder,
+                                 JwtTokenProvider jwtTokenProvider) {
+        this.systemAccountRepository = systemAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     private static final List<String> VALID_ROLES = List.of(
             "PROJECT_DIRECTOR", "PROJECT_MANAGER", "TEAM_CONTRIBUTOR"

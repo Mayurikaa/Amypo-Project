@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.example.demo.dto.SystemAccountDto;
 import com.example.demo.service.SystemAccountService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -13,10 +12,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
-@RequiredArgsConstructor
 public class SystemAccountController {
 
     private final SystemAccountService systemAccountService;
+
+    public SystemAccountController(SystemAccountService systemAccountService) {
+        this.systemAccountService = systemAccountService;
+    }
 
     @PostMapping("/provision")
     @PreAuthorize("hasRole('PROJECT_DIRECTOR')")

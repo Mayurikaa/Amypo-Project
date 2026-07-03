@@ -4,7 +4,6 @@ import com.example.demo.dto.PortfolioAnalyticsDto;
 import com.example.demo.dto.ProjectInitiativeDto;
 import com.example.demo.service.ProjectInitiativeService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -14,10 +13,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/initiatives")
-@RequiredArgsConstructor
 public class ProjectInitiativeController {
 
     private final ProjectInitiativeService projectInitiativeService;
+
+    public ProjectInitiativeController(ProjectInitiativeService projectInitiativeService) {
+        this.projectInitiativeService = projectInitiativeService;
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('PROJECT_DIRECTOR')")

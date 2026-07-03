@@ -13,7 +13,6 @@ import com.example.demo.repository.ProjectMilestoneRepository;
 import com.example.demo.repository.ProjectTaskRepository;
 import com.example.demo.repository.SystemAccountRepository;
 import com.example.demo.repository.TaskSubmissionRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ProjectTaskService {
 
     private final ProjectTaskRepository projectTaskRepository;
@@ -30,6 +28,18 @@ public class ProjectTaskService {
     private final ProjectMilestoneRepository projectMilestoneRepository;
     private final SystemAccountRepository systemAccountRepository;
     private final TaskSubmissionRepository taskSubmissionRepository;
+
+    public ProjectTaskService(ProjectTaskRepository projectTaskRepository,
+                               ProjectInitiativeRepository projectInitiativeRepository,
+                               ProjectMilestoneRepository projectMilestoneRepository,
+                               SystemAccountRepository systemAccountRepository,
+                               TaskSubmissionRepository taskSubmissionRepository) {
+        this.projectTaskRepository = projectTaskRepository;
+        this.projectInitiativeRepository = projectInitiativeRepository;
+        this.projectMilestoneRepository = projectMilestoneRepository;
+        this.systemAccountRepository = systemAccountRepository;
+        this.taskSubmissionRepository = taskSubmissionRepository;
+    }
 
     private static final List<String> VALID_STATUSES = List.of(
             "PENDING", "IN_PROGRESS", "IN_REVIEW", "COMPLETED"
