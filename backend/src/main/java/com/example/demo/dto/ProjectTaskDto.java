@@ -40,6 +40,17 @@ public class ProjectTaskDto {
 
     public ProjectTaskDto() {}
 
+    public ProjectTaskDto(Long id, String taskCode, Long initiativeId, Long milestoneId,
+                          String title, String description, String priority,
+                          Integer estimatedHours, Integer loggedHours, LocalDate dueDate,
+                          Long assigneeId, String status) {
+        this.id = id; this.taskCode = taskCode; this.initiativeId = initiativeId;
+        this.milestoneId = milestoneId; this.title = title; this.description = description;
+        this.priority = priority; this.estimatedHours = estimatedHours;
+        this.loggedHours = loggedHours; this.dueDate = dueDate;
+        this.assigneeId = assigneeId; this.status = status;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

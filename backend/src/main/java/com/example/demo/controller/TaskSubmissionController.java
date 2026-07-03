@@ -4,7 +4,6 @@ import com.example.demo.dto.SubmissionReviewDto;
 import com.example.demo.dto.TaskSubmissionDto;
 import com.example.demo.service.TaskSubmissionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -14,10 +13,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/submissions")
-@RequiredArgsConstructor
 public class TaskSubmissionController {
 
     private final TaskSubmissionService taskSubmissionService;
+
+    public TaskSubmissionController(TaskSubmissionService taskSubmissionService) {
+        this.taskSubmissionService = taskSubmissionService;
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('TEAM_CONTRIBUTOR')")

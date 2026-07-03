@@ -75,6 +75,7 @@ public class TaskSubmission {
         private String submissionNotes;
         private String reviewerFeedback;
         private String completionStatus;
+        private LocalDateTime submittedAt;
 
         public Builder id(Long id) { this.id = id; return this; }
         public Builder task(ProjectTask task) { this.task = task; return this; }
@@ -83,6 +84,7 @@ public class TaskSubmission {
         public Builder submissionNotes(String submissionNotes) { this.submissionNotes = submissionNotes; return this; }
         public Builder reviewerFeedback(String reviewerFeedback) { this.reviewerFeedback = reviewerFeedback; return this; }
         public Builder completionStatus(String completionStatus) { this.completionStatus = completionStatus; return this; }
+        public Builder submittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; return this; }
 
         public TaskSubmission build() {
             TaskSubmission s = new TaskSubmission();
@@ -93,6 +95,7 @@ public class TaskSubmission {
             s.submissionNotes = this.submissionNotes;
             s.reviewerFeedback = this.reviewerFeedback;
             s.completionStatus = this.completionStatus;
+            s.submittedAt = this.submittedAt;
             return s;
         }
     }

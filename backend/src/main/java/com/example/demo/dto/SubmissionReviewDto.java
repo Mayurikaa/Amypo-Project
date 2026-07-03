@@ -7,6 +7,11 @@ public class SubmissionReviewDto {
 
     public SubmissionReviewDto() {}
 
+    public SubmissionReviewDto(String reviewerFeedback, String completionStatus) {
+        this.reviewerFeedback = reviewerFeedback;
+        this.completionStatus = completionStatus;
+    }
+
     public String getReviewerFeedback() { return reviewerFeedback; }
     public void setReviewerFeedback(String reviewerFeedback) { this.reviewerFeedback = reviewerFeedback; }
 
