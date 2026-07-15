@@ -34,8 +34,12 @@ public class AuthResponseDto {
         private String fullName;
         private String domainRole;
 
-        public Builder token(String token) { this.token = token; return this; }
-        public Builder id(Long id) { this.id = id; return this; }
+        public Builder token(String token) {
+             this.token = token;
+              return this;
+             }
+        public Builder id(Long id) { 
+            this.id = id; return this; }
         public Builder email(String email) { this.email = email; return this; }
         public Builder fullName(String fullName) { this.fullName = fullName; return this; }
         public Builder domainRole(String domainRole) { this.domainRole = domainRole; return this; }

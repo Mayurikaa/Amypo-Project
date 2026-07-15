@@ -18,9 +18,11 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
+    private final String secretKey;
     private final Key signingKey;
 
     public JwtTokenProvider(@Value("${app.jwt.secret}") String secret) {
+        this.secretKey = secret;
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
