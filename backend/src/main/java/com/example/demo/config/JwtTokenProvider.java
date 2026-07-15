@@ -18,6 +18,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
+    @SuppressWarnings("unused")
     private final String secretKey;
     private final Key signingKey;
 
