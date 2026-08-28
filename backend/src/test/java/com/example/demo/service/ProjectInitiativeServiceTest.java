@@ -155,6 +155,33 @@ class ProjectInitiativeServiceTest {
     }
 
     @Test
+    void updateInitiative_updatesProjectCodeAndDirector() {
+        ProjectInitiativeDto dto = ProjectInitiativeDto.builder()
+                .projectCode("PRJ-999")
+                .title("Updated Title")
+                .description("Updated Desc")
+                .budgetAllocated(BigDecimal.valueOf(20000))
+                .startDate(LocalDate.now())
+                .targetEndDate(LocalDate.now().plusMonths(6))
+                .directorId(2L)
+                .status("IN_PROGRESS")
+                .build();
+
+        SystemAccount newDirector = SystemAccount.builder()
+                .id(2L).email("new-director@example.com")
+                .fullName("New Director").domainRole("PROJECT_DIRECTOR").isActive(true).build();
+
+        when(projectInitiativeRepository.findById(10L)).thenReturn(Optional.of(sampleInitiative));
+        when(systemAccountRepository.findById(2L)).thenReturn(Optional.of(newDirector));
+        when(projectInitiativeRepository.save(any())).thenReturn(sampleInitiative);
+
+        projectInitiativeService.updateInitiative(10L, dto);
+
+        verify(systemAccountRepository).findById(2L);
+        verify(projectInitiativeRepository).save(any());
+    }
+
+    @Test
     void updateInitiative_notFound_throwsResourceNotFoundException() {
         ProjectInitiativeDto dto = ProjectInitiativeDto.builder()
                 .title("T").budgetAllocated(BigDecimal.ONE)

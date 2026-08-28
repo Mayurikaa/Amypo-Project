@@ -94,12 +94,37 @@ public class ProjectInitiativeService {
     public ProjectInitiativeDto updateInitiative(Long id, ProjectInitiativeDto dto) {
         ProjectInitiative initiative = projectInitiativeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Initiative not found: " + id));
-        initiative.setTitle(dto.getTitle());
-        initiative.setDescription(dto.getDescription());
-        initiative.setBudgetAllocated(dto.getBudgetAllocated());
-        initiative.setStartDate(dto.getStartDate());
-        initiative.setTargetEndDate(dto.getTargetEndDate());
-        initiative.setStatus(dto.getStatus());
+
+        if (dto.getProjectCode() != null && !dto.getProjectCode().equals(initiative.getProjectCode())) {
+            if (projectInitiativeRepository.existsByProjectCode(dto.getProjectCode())) {
+                throw new CapacityExceededException("Project code already exists: " + dto.getProjectCode());
+            }
+            initiative.setProjectCode(dto.getProjectCode());
+        }
+
+        if (dto.getTitle() != null) {
+            initiative.setTitle(dto.getTitle());
+        }
+        if (dto.getDescription() != null) {
+            initiative.setDescription(dto.getDescription());
+        }
+        if (dto.getBudgetAllocated() != null) {
+            initiative.setBudgetAllocated(dto.getBudgetAllocated());
+        }
+        if (dto.getStartDate() != null) {
+            initiative.setStartDate(dto.getStartDate());
+        }
+        if (dto.getTargetEndDate() != null) {
+            initiative.setTargetEndDate(dto.getTargetEndDate());
+        }
+        if (dto.getDirectorId() != null) {
+            SystemAccount director = systemAccountRepository.findById(dto.getDirectorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Director not found: " + dto.getDirectorId()));
+            initiative.setDirector(director);
+        }
+        if (dto.getStatus() != null) {
+            initiative.setStatus(dto.getStatus());
+        }
         if (dto.getBudgetConsumed() != null) {
             initiative.setBudgetConsumed(dto.getBudgetConsumed());
         }
