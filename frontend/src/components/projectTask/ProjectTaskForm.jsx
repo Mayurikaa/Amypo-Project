@@ -21,14 +21,14 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
 
   useEffect(() => {
     getInitiatives({ page: 0, size: 50 })
-      .then((r) => setInitiatives(r.data?.content || []))
+      .then((r) => setInitiatives(r.data?.content || r.content || []))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (form.initiativeId) {
       getMilestones({ initiativeId: form.initiativeId, page: 0, size: 50 })
-        .then((r) => setMilestones(r.data?.content || []))
+        .then((r) => setMilestones(r.data?.content || r.content || []))
         .catch(() => {});
     } else {
       setMilestones([]);
@@ -47,21 +47,22 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
     }
 
     try {
+      const payload = { ...form, initiativeId: form.initiativeId || null, milestoneId: form.milestoneId || null };
       if (existing) {
-        const res = await apiUpdate(existing.id, form);
+        const res = await apiUpdate(existing.id, payload);
         dispatch(updateTask(res.data));
         setSuccessMessage('Task updated successfully.');
       } else {
-        const res = await createTask(form);
+        const res = await createTask(payload);
         dispatch(addTask(res.data));
         setSuccessMessage('New workload task entry added to pipeline successfully.');
       }
       setTimeout(() => {
         setSuccessMessage('');
-        onClose();
+        onClose && onClose();
       }, 1500);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Save failed';
+      const msg = err?.response?.data?.message || err?.message || 'Save failed';
       setError(msg);
     }
   };
@@ -79,6 +80,7 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Sequential task tag string must be specified.</label>
             <input
+              aria-label="Task code"
               placeholder="TASK-CODE"
               value={form.taskCode || ''}
               onChange={(e) => setForm({ ...form, taskCode: e.target.value })}
@@ -88,8 +90,9 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Parent Initiative</label>
             <select
+              aria-label="Initiative"
               value={form.initiativeId || ''}
-              onChange={(e) => setForm({ ...form, initiativeId: e.target.value })}
+              onChange={(e) => setForm({ ...form, initiativeId: e.target.value, milestoneId: '' })}
               style={inputStyle}
             >
               <option value="">-- Select Initiative --</option>
@@ -101,6 +104,7 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Milestone (optional)</label>
             <select
+              aria-label="Milestone"
               value={form.milestoneId || ''}
               onChange={(e) => setForm({ ...form, milestoneId: e.target.value })}
               style={inputStyle}
@@ -112,6 +116,7 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Actionable task scope title is required.</label>
             <input
+              aria-label="Title"
               placeholder="Provision Backend JWT"
               value={form.title || ''}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -128,8 +133,13 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Priority</label>
-            <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} style={inputStyle}>
-              {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => <option key={p}>{p}</option>)}
+            <select
+              aria-label="Priority"
+              value={form.priority || 'MEDIUM'}
+              onChange={(e) => setForm({ ...form, priority: e.target.value })}
+              style={inputStyle}
+            >
+              {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div style={{ marginBottom: 12 }}>

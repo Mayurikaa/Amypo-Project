@@ -12,6 +12,7 @@ export default function ProjectTaskList({ onEdit, onNew }) {
   const user = useSelector((s) => s.auth?.user ?? null);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('ALL');
+  const [notice, setNotice] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -21,9 +22,11 @@ export default function ProjectTaskList({ onEdit, onNew }) {
       if (err?.response?.status === 401) {
         localStorage.removeItem('taskguard_token');
         localStorage.removeItem('taskguard_user');
+        localStorage.removeItem('taskguard_role');
         dispatch(logout());
         return;
       }
+      setNotice({ type: 'error', message: err?.response?.data?.message || 'Unable to load tasks.' });
     }
   };
 
@@ -31,24 +34,41 @@ export default function ProjectTaskList({ onEdit, onNew }) {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this task?')) return;
-    await deleteTask(id);
-    dispatch(removeTask(id));
+    try {
+      await deleteTask(id);
+      dispatch(removeTask(id));
+      setNotice({ type: 'success', message: 'Task deleted successfully.' });
+      setTimeout(() => setNotice(null), 2200);
+    } catch (err) {
+      setNotice({ type: 'error', message: err?.response?.data?.message || 'Delete failed.' });
+    }
   };
 
   const handleStatusChange = async (id, newStatus) => {
-    const res = await updateTaskStatus(id, newStatus);
-    dispatch(updateTask(res.data));
+    try {
+      const res = await updateTaskStatus(id, newStatus);
+      dispatch(updateTask(res.data));
+      setNotice({ type: 'success', message: 'Task updated successfully.' });
+      setTimeout(() => setNotice(null), 2200);
+    } catch (err) {
+      setNotice({ type: 'error', message: err?.response?.data?.message || 'Status update failed.' });
+    }
   };
 
   const canManage = ['PROJECT_DIRECTOR', 'PROJECT_MANAGER'].includes(user?.domainRole);
 
   return (
     <div>
+      {notice && (
+        <div style={{ marginBottom: 12, padding: '8px 10px', borderRadius: 4, background: notice.type === 'success' ? '#e8f5e9' : '#fdecea', color: notice.type === 'success' ? '#1b5e20' : '#b71c1c' }}>
+          {notice.message}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h3 style={{ margin: 0 }}>Project Tasks</h3>
         {canManage && <button onClick={onNew} style={btn('#1976d2')}>+ New Task</button>}
       </div>
-      <SearchFilterBar query={query} status={status} onQueryChange={setQuery} onStatusChange={setStatus} statusOptions={['PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED']} />
+      <SearchFilterBar query={query} status={status} onQueryChange={setQuery} onStatusChange={setStatus} statusOptions={['ALL', 'PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED']} />
       {tasks.length === 0 ? <EmptyState /> : (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead><tr style={{ background: '#f5f5f5' }}>{['Code', 'Title', 'Priority', 'Status', 'Est.Hrs', 'Due', 'Actions'].map((h) => <th key={h} style={th}>{h}</th>)}</tr></thead>
@@ -60,7 +80,7 @@ export default function ProjectTaskList({ onEdit, onNew }) {
                 <td style={td}>{t.priority}</td>
                 <td style={td}>
                   <select value={t.status} onChange={(e) => handleStatusChange(t.id, e.target.value)} style={{ fontSize: 12, padding: '2px 6px', border: '1px solid #ccc', borderRadius: 4 }}>
-                    {['PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'].map((s) => <option key={s}>{s}</option>)}
+                    {['PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'].map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
                 <td style={td}>{t.estimatedHours}</td>
@@ -68,7 +88,7 @@ export default function ProjectTaskList({ onEdit, onNew }) {
                 <td style={td}>
                   {canManage && (
                     <>
-                      <button onClick={() => onEdit(t)} style={btn('#388e3c')}>Edit</button>
+                      <button onClick={() => onEdit?.(t)} style={btn('#388e3c')}>Edit</button>
                       <button onClick={() => handleDelete(t.id)} style={{ ...btn('#d32f2f'), marginLeft: 6 }}>Delete</button>
                     </>
                   )}

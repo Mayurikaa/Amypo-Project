@@ -9,11 +9,22 @@ export const loginUser = createAsyncThunk('auth/login', async (credentials, { re
   }
 });
 
+const getStoredUser = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('taskguard_user') || 'null');
+    if (user) return user;
+  } catch (err) {
+    // ignore malformed storage data
+  }
+  const role = localStorage.getItem('taskguard_role');
+  return role ? { domainRole: role } : null;
+};
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     token: localStorage.getItem('taskguard_token') || null,
-    user: JSON.parse(localStorage.getItem('taskguard_user') || 'null'),
+    user: getStoredUser(),
     isAuthenticated: !!localStorage.getItem('taskguard_token'),
     loading: false,
     error: null,
@@ -27,6 +38,7 @@ const authSlice = createSlice({
       state.accessRevoked = false;
       localStorage.removeItem('taskguard_token');
       localStorage.removeItem('taskguard_user');
+      localStorage.removeItem('taskguard_role');
     },
   },
   extraReducers: (builder) => {
@@ -37,13 +49,25 @@ const authSlice = createSlice({
         state.accessRevoked = false;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        const { token, id, email, fullName, domainRole } = action.payload;
+        const payload = action.payload || {};
+        const token = payload.token || payload.accessToken || null;
+        const user = payload.user || {
+          id: payload.id,
+          email: payload.email,
+          fullName: payload.fullName || payload.name,
+          domainRole: payload.domainRole || payload.role,
+        };
+
         state.loading = false;
         state.token = token;
-        state.user = { id, email, fullName, domainRole };
-        state.isAuthenticated = true;
-        localStorage.setItem('taskguard_token', token);
-        localStorage.setItem('taskguard_user', JSON.stringify({ id, email, fullName, domainRole }));
+        state.user = user;
+        state.isAuthenticated = Boolean(token);
+
+        if (token) localStorage.setItem('taskguard_token', token);
+        if (user) {
+          localStorage.setItem('taskguard_user', JSON.stringify(user));
+          if (user.domainRole) localStorage.setItem('taskguard_role', user.domainRole);
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
