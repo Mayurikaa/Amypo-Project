@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 
 export default function SearchFilterBar({
   onFilterChange,
+  onQueryChange,
+  onStatusChange,
+  query,
+  status,
   placeholder = 'Search...',
   statusOptions = ['ALL', 'PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'],
   assigneeOptions = [],
@@ -12,35 +16,40 @@ export default function SearchFilterBar({
 
   const handleTextChange = (e) => {
     setSearchText(e.target.value);
-    onFilterChange({ text: e.target.value, status: selectedStatus, assignee: selectedAssignee });
+    if (onFilterChange) onFilterChange({ text: e.target.value, status: selectedStatus, assignee: selectedAssignee });
+    if (onQueryChange) onQueryChange(e.target.value);
   };
 
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
-    onFilterChange({ text: searchText, status: e.target.value, assignee: selectedAssignee });
+    if (onFilterChange) onFilterChange({ text: searchText, status: e.target.value, assignee: selectedAssignee });
+    if (onStatusChange) onStatusChange(e.target.value);
   };
 
   const handleAssigneeChange = (e) => {
     setSelectedAssignee(e.target.value);
-    onFilterChange({ text: searchText, status: selectedStatus, assignee: e.target.value });
+    if (onFilterChange) onFilterChange({ text: searchText, status: selectedStatus, assignee: e.target.value });
   };
 
   const handleClear = () => {
     setSearchText('');
     setSelectedStatus('ALL');
     setSelectedAssignee('');
-    onFilterChange({ text: '', status: 'ALL', assignee: '' });
+    if (onFilterChange) onFilterChange({ text: '', status: 'ALL', assignee: '' });
+    if (onQueryChange) onQueryChange('');
+    if (onStatusChange) onStatusChange('ALL');
   };
 
   return (
     <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
       <input
+        aria-label="Search tasks"
         placeholder={placeholder}
-        value={searchText}
+        value={query ?? searchText}
         onChange={handleTextChange}
         style={{ flex: 1, minWidth: 160, padding: '8px 12px', border: '1px solid #ccc', borderRadius: 4 }}
       />
-      <select value={selectedStatus} onChange={handleStatusChange} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: 4 }}>
+      <select aria-label="Task status filter" value={status ?? selectedStatus} onChange={handleStatusChange} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: 4 }}>
         {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
       {assigneeOptions.length > 0 && (

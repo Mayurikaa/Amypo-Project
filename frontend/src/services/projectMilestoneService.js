@@ -1,4 +1,10 @@
+import axios from 'axios';
 import api from './api';
+
+const BASE = 'http://localhost:8082/api/v1/milestones';
+const getHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+
+export const getMilestones = (params) => axios.get(BASE, { params, ...getHeaders() });
 
 const projectMilestoneService = {
   getAll: (initiativeId, status, page = 0, size = 10) =>
@@ -9,3 +15,4 @@ const projectMilestoneService = {
 };
 
 export default projectMilestoneService;
+

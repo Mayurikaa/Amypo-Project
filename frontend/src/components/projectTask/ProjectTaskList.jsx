@@ -1,27 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTasks, deleteTask } from '../../store/slices/projectTaskSlice';
+import { setTasks, removeTask, updateTask } from '../../store/slices/projectTaskSlice';
+import { logout } from '../../store/slices/authSlice';
+import { getTasks, deleteTask, updateTaskStatus } from '../../services/projectTaskService';
 import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 
 export default function ProjectTaskList({ onEdit, onNew }) {
   const dispatch = useDispatch();
-  const { tasks } = useSelector((s) => s.projectTask);
-  const user = useSelector((s) => s.auth.user);
+  const tasks = useSelector((s) => s.projectTask?.tasks ?? []);
+  const user = useSelector((s) => s.auth?.user ?? null);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('ALL');
 
-  useEffect(() => {
-    dispatch(fetchTasks({ query, status: status === 'ALL' ? undefined : status, page: 0, size: 20 }));
-  }, [dispatch, query, status]);
+  const fetchData = async () => {
+    try {
+      const response = await getTasks({ query, status, page: 0, size: 20 });
+      dispatch(setTasks(response?.data ?? response));
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        localStorage.removeItem('taskguard_token');
+        localStorage.removeItem('taskguard_user');
+        dispatch(logout());
+        return;
+      }
+    }
+  };
+
+  useEffect(() => { fetchData(); }, [query, status]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this task?')) return;
-    dispatch(deleteTask(id));
+    await deleteTask(id);
+    dispatch(removeTask(id));
   };
 
   const handleStatusChange = async (id, newStatus) => {
-    dispatch(fetchTasks({ query, status: newStatus, page: 0, size: 20 }));
+    const res = await updateTaskStatus(id, newStatus);
+    dispatch(updateTask(res.data));
   };
 
   const canManage = ['PROJECT_DIRECTOR', 'PROJECT_MANAGER'].includes(user?.domainRole);

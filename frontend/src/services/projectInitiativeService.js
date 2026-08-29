@@ -1,4 +1,10 @@
+import axios from 'axios';
 import api from './api';
+
+const BASE = 'http://localhost:8082/api/v1/initiatives';
+const getHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+
+export const getInitiatives = (params) => axios.get(BASE, { params, ...getHeaders() });
 
 const projectInitiativeService = {
   getAll: (query, status, page = 0, size = 10) =>
@@ -11,3 +17,4 @@ const projectInitiativeService = {
 };
 
 export default projectInitiativeService;
+
