@@ -9,4 +9,6 @@ const authService = {
   },
 };
 
+export const login = (credentials) => authService.login(credentials);
+export const register = (credentials) => authService.register(credentials);
 export default authService;

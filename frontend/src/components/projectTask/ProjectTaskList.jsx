@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setTasks, removeTask, updateTask } from '../../store/slices/projectTaskSlice';
 import { logout } from '../../store/slices/authSlice';
-import { getTasks, deleteTask, updateTaskStatus } from '../../services/projectTaskService';
+import projectTaskService from '../../services/projectTaskService';
 import SearchFilterBar from '../common/SearchFilterBar';
 import EmptyState from '../common/EmptyState';
 
@@ -14,9 +14,13 @@ export default function ProjectTaskList({ onEdit, onNew }) {
   const [status, setStatus] = useState('ALL');
   const [notice, setNotice] = useState(null);
 
+  const getTaskData = projectTaskService.getTasks || ((params) => projectTaskService.getAll(undefined, params.status, params.query, params.page, params.size));
+  const removeTaskData = projectTaskService.deleteTask || projectTaskService.remove;
+  const changeTaskStatus = projectTaskService.updateTaskStatus || ((id, nextStatus) => projectTaskService.update(id, { status: nextStatus }));
+
   const fetchData = async () => {
     try {
-      const response = await getTasks({ query, status, page: 0, size: 20 });
+      const response = await getTaskData({ query, status, page: 0, size: 20 });
       dispatch(setTasks(response?.data ?? response));
     } catch (err) {
       if (err?.response?.status === 401) {
@@ -35,7 +39,7 @@ export default function ProjectTaskList({ onEdit, onNew }) {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this task?')) return;
     try {
-      await deleteTask(id);
+      await removeTaskData(id);
       dispatch(removeTask(id));
       setNotice({ type: 'success', message: 'Task deleted successfully.' });
       setTimeout(() => setNotice(null), 2200);
@@ -46,7 +50,7 @@ export default function ProjectTaskList({ onEdit, onNew }) {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const res = await updateTaskStatus(id, newStatus);
+      const res = await changeTaskStatus(id, newStatus);
       dispatch(updateTask(res.data));
       setNotice({ type: 'success', message: 'Task updated successfully.' });
       setTimeout(() => setNotice(null), 2200);

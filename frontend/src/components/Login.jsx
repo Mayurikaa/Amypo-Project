@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../store/slices/authSlice';
-import authService from '../services/authService';
+import { loginFailure, loginStart, loginSuccess } from '../store/slices/authSlice';
+import authService, { login as namedLogin, register as namedRegister } from '../services/authService';
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -10,6 +10,8 @@ export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '', fullName: '', domainRole: 'TEAM_CONTRIBUTOR' });
   const [validationErrors, setValidationErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
+  const loginRequest = namedLogin || authService?.login;
+  const registerRequest = namedRegister || authService?.register;
 
   const validate = () => {
     const errs = {};
@@ -27,14 +29,21 @@ export default function Login() {
     
     if (isRegistering) {
       try {
-        await authService.register({ email: formData.email, password: formData.password, fullName: formData.fullName, domainRole: formData.domainRole });
+        await registerRequest({ email: formData.email, password: formData.password, fullName: formData.fullName, domainRole: formData.domainRole });
         setSuccessMessage('Account registered. Please log in.');
         setIsRegistering(false);
       } catch (err) {
+        dispatch(loginFailure(err.response?.data?.message || 'Registration failed'));
         console.error('Register error:', err);
       }
     } else {
-      dispatch(loginUser({ email: formData.email, password: formData.password }));
+      dispatch(loginStart());
+      try {
+        const response = await loginRequest({ email: formData.email, password: formData.password });
+        dispatch(loginSuccess(response));
+      } catch (err) {
+        dispatch(loginFailure(err.response?.data?.message || 'Authentication failed'));
+      }
     }
   };
 

@@ -31,6 +31,39 @@ const authSlice = createSlice({
     accessRevoked: false,
   },
   reducers: {
+    loginStart(state) {
+      state.loading = true;
+      state.error = null;
+    },
+    loginSuccess(state, action) {
+      const payload = action.payload || {};
+      const token = payload.token || payload.accessToken || null;
+      const user = payload.user || {
+        id: payload.id,
+        email: payload.email,
+        fullName: payload.fullName || payload.name,
+        domainRole: payload.domainRole || payload.role,
+      };
+      state.loading = false;
+      state.token = token;
+      state.user = user;
+      state.isAuthenticated = Boolean(token);
+      if (token) {
+        localStorage.setItem('taskguard_token', token);
+        localStorage.setItem('token', token);
+      }
+      if (user) {
+        localStorage.setItem('taskguard_user', JSON.stringify(user));
+        if (user.domainRole) {
+          localStorage.setItem('taskguard_role', user.domainRole);
+          localStorage.setItem('role', user.domainRole);
+        }
+      }
+    },
+    loginFailure(state, action) {
+      state.loading = false;
+      state.error = action.payload || 'Authentication failed';
+    },
     logout(state) {
       state.token = null;
       state.user = null;
@@ -39,6 +72,8 @@ const authSlice = createSlice({
       localStorage.removeItem('taskguard_token');
       localStorage.removeItem('taskguard_user');
       localStorage.removeItem('taskguard_role');
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
     },
   },
   extraReducers: (builder) => {
@@ -63,10 +98,16 @@ const authSlice = createSlice({
         state.user = user;
         state.isAuthenticated = Boolean(token);
 
-        if (token) localStorage.setItem('taskguard_token', token);
+        if (token) {
+          localStorage.setItem('taskguard_token', token);
+          localStorage.setItem('token', token);
+        }
         if (user) {
           localStorage.setItem('taskguard_user', JSON.stringify(user));
-          if (user.domainRole) localStorage.setItem('taskguard_role', user.domainRole);
+          if (user.domainRole) {
+            localStorage.setItem('taskguard_role', user.domainRole);
+            localStorage.setItem('role', user.domainRole);
+          }
         }
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -81,5 +122,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
 export default authSlice.reducer;
