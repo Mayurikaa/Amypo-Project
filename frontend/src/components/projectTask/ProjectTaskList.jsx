@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setTasksDirectly, selectTask } from '../../store/slices/projectTaskSlice';
 import axios from 'axios';
@@ -15,7 +15,7 @@ export default function ProjectTaskList({ onOpenForm }) {
   const isManager = ['PROJECT_DIRECTOR', 'PROJECT_MANAGER'].includes(user?.domainRole);
   const isContributor = user?.domainRole === 'TEAM_CONTRIBUTOR';
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     const params = {};
     if (query) params.query = query;
     if (status !== 'ALL') params.status = status;
@@ -23,9 +23,9 @@ export default function ProjectTaskList({ onOpenForm }) {
     axios.get('/api/v1/tasks', { params })
       .then((r) => dispatch(setTasksDirectly(r.data)))
       .catch(() => {});
-  };
+  }, [dispatch, isContributor, query, status, user?.id]);
 
-  useEffect(() => { fetchData(); }, [query, status]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleDelete = (id) => {
     if (window.confirm('Delete this task?')) {
