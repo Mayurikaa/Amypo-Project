@@ -1,32 +1,57 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import projectTaskService from '../../services/projectTaskService';
+
+export const fetchTasks = createAsyncThunk(
+  'projectTasks/fetchAll',
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      return await projectTaskService.getAll(
+        params.assigneeId, params.status, params.query, params.page, params.size
+      );
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch tasks');
+    }
+  }
+);
 
 const projectTaskSlice = createSlice({
-  name: 'projectTask',
-  initialState: { tasks: [], items: [], loading: false, error: null, totalPages: 0, currentPage: 0, selectedItem: null },
+  name: 'projectTasks',
+  initialState: {
+    items: [],
+    loading: false,
+    error: null,
+    totalPages: 0,
+    currentPage: 0,
+    selectedItem: null,
+  },
   reducers: {
-    setTasks(state, action) {
-      const content = action.payload?.content || action.payload || [];
-      state.tasks = Array.isArray(content) ? content : [];
-      state.items = state.tasks;
-      state.totalPages = action.payload?.totalPages || 0;
-    },
-    setLoading(state, action) { state.loading = action.payload; },
-    setError(state, action) { state.error = action.payload; },
-    addTask(state, action) {
-      state.tasks.unshift(action.payload);
-      state.items = state.tasks;
-    },
+    selectTask(state, action) { state.selectedItem = action.payload; },
+    clearSelectedTask(state) { state.selectedItem = null; },
+    addTask(state, action) { state.items.push(action.payload); },
     updateTask(state, action) {
-      const idx = state.tasks.findIndex(t => t.id === action.payload.id);
-      if (idx !== -1) state.tasks[idx] = action.payload;
-      state.items = state.tasks;
+      const idx = state.items.findIndex((t) => t.id === action.payload.id);
+      if (idx !== -1) state.items[idx] = action.payload;
     },
-    removeTask(state, action) {
-      state.tasks = state.tasks.filter(t => t.id !== action.payload);
-      state.items = state.tasks;
+    setTasksDirectly(state, action) {
+      state.items = action.payload.content || action.payload || [];
+      state.totalPages = action.payload.totalPages || 0;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTasks.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.content || [];
+        state.totalPages = action.payload.totalPages || 0;
+        state.currentPage = action.payload.number || 0;
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
-export const { setTasks, setLoading, setError, addTask, updateTask, removeTask } = projectTaskSlice.actions;
+export const { selectTask, clearSelectedTask, addTask, updateTask, setTasksDirectly } = projectTaskSlice.actions;
 export default projectTaskSlice.reducer;

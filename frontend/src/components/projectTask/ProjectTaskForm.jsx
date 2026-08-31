@@ -189,6 +189,7 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
             </button>
             <button
               type="submit"
+              aria-label="Finalize"
               style={{ padding: '8px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
             >
               Save

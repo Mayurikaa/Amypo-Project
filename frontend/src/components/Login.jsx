@@ -32,8 +32,7 @@ export default function Login() {
         setIsRegistering(false);
         dispatch(loginFailure(null));
       } else {
-        const res = await login({ email: formData.email, password: formData.password });
-        const data = res.data;
+        const data = await login({ email: formData.email, password: formData.password });
         localStorage.setItem('taskguard_token', data.token);
         localStorage.setItem('taskguard_user', JSON.stringify(data));
         dispatch(loginSuccess(data));
