@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginFailure, loginStart, loginSuccess } from '../store/slices/authSlice';
-import authService, { login as namedLogin, register as namedRegister } from '../services/authService';
+import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
+import { login, register } from '../services/authService';
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -10,8 +10,6 @@ export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '', fullName: '', domainRole: 'TEAM_CONTRIBUTOR' });
   const [validationErrors, setValidationErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
-  const loginRequest = namedLogin || authService?.login;
-  const registerRequest = namedRegister || authService?.register;
 
   const validate = () => {
     const errs = {};
@@ -26,36 +24,34 @@ export default function Login() {
     const errs = validate();
     if (Object.keys(errs).length) { setValidationErrors(errs); return; }
     setValidationErrors({});
-    
-    if (isRegistering) {
-      try {
-        await registerRequest({ email: formData.email, password: formData.password, fullName: formData.fullName, domainRole: formData.domainRole });
+    dispatch(loginStart());
+    try {
+      if (isRegistering) {
+        await register({ email: formData.email, password: formData.password, fullName: formData.fullName, domainRole: formData.domainRole });
         setSuccessMessage('Account registered. Please log in.');
         setIsRegistering(false);
-      } catch (err) {
-        dispatch(loginFailure(err.response?.data?.message || 'Registration failed'));
-        console.error('Register error:', err);
+        dispatch(loginFailure(null));
+      } else {
+        const res = await login({ email: formData.email, password: formData.password });
+        const data = res.data;
+        localStorage.setItem('taskguard_token', data.token);
+        localStorage.setItem('taskguard_user', JSON.stringify(data));
+        dispatch(loginSuccess(data));
       }
-    } else {
-      dispatch(loginStart());
-      try {
-        const response = await loginRequest({ email: formData.email, password: formData.password });
-        dispatch(loginSuccess(response));
-      } catch (err) {
-        dispatch(loginFailure(err.response?.data?.message || 'Authentication failed'));
-      }
+    } catch (err) {
+      dispatch(loginFailure(err.response?.data?.message || 'Authentication failed'));
     }
   };
 
   return (
     <div style={{ maxWidth: 420, margin: '80px auto', padding: 28, border: '1px solid #ddd', borderRadius: 8 }}>
-      <h2>{isRegistering ? 'Register - TaskGuard' : 'Login - TaskGuard'}</h2>
+      <h2>Login - TaskGuard</h2>
       {successMessage && <div style={{ color: 'green', marginBottom: 8 }}>{successMessage}</div>}
       {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <input
-            placeholder="Email"
+            placeholder="user@enterprise.domain"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             style={{ width: '100%', marginBottom: 4, padding: 8, boxSizing: 'border-box' }}
@@ -65,7 +61,7 @@ export default function Login() {
         <div style={{ marginTop: 8 }}>
           <input
             type="password"
-            placeholder="Password"
+            placeholder="••••••••••••"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             style={{ width: '100%', marginBottom: 4, padding: 8, boxSizing: 'border-box' }}
@@ -99,7 +95,7 @@ export default function Login() {
           disabled={loading}
           style={{ width: '100%', padding: 10, marginTop: 16, background: '#1976d2', color: '#fff', borderRadius: 4, cursor: 'pointer' }}
         >
-          {loading ? 'Please wait...' : isRegistering ? 'Register' : 'Login'}
+          {loading ? 'Please wait...' : isRegistering ? 'Register Account' : 'Authorize Session'}
         </button>
       </form>
       <button

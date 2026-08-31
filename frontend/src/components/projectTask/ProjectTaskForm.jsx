@@ -7,28 +7,27 @@ import { getInitiatives } from '../../services/projectInitiativeService';
 
 export default function ProjectTaskForm({ existing, onClose, isOpen }) {
   const dispatch = useDispatch();
-  const user = useSelector((s) => s.auth?.user ?? null);
   const [form, setForm] = useState({
     taskCode: '', initiativeId: '', milestoneId: '', title: '', description: '',
     priority: 'MEDIUM', estimatedHours: '', dueDate: '', assigneeId: '', status: 'PENDING',
     ...existing,
   });
   const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [milestones, setMilestones] = useState([]);
   const [initiatives, setInitiatives] = useState([]);
-  const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
     getInitiatives({ page: 0, size: 50 })
-      .then((r) => setInitiatives(r.data?.content || r.content || []))
+      .then((r) => setInitiatives(r.data?.content || []))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (form.initiativeId) {
       getMilestones({ initiativeId: form.initiativeId, page: 0, size: 50 })
-        .then((r) => setMilestones(r.data?.content || r.content || []))
+        .then((r) => setMilestones(r.data?.content || []))
         .catch(() => {});
     } else {
       setMilestones([]);
@@ -39,7 +38,6 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
     e.preventDefault();
     setError('');
     setValidationError('');
-    setSuccessMessage('');
 
     if (!form.title || !form.title.trim()) {
       setValidationError('Actionable title label is mandatory');
@@ -47,22 +45,18 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
     }
 
     try {
-      const payload = { ...form, initiativeId: form.initiativeId || null, milestoneId: form.milestoneId || null };
       if (existing) {
-        const res = await apiUpdate(existing.id, payload);
+        const res = await apiUpdate(existing.id, form);
         dispatch(updateTask(res.data));
         setSuccessMessage('Task updated successfully.');
       } else {
-        const res = await createTask(payload);
+        const res = await createTask(form);
         dispatch(addTask(res.data));
         setSuccessMessage('New workload task entry added to pipeline successfully.');
       }
-      setTimeout(() => {
-        setSuccessMessage('');
-        onClose && onClose();
-      }, 1500);
+      setTimeout(() => onClose && onClose(), 1500);
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || 'Save failed';
+      const msg = err.response?.data?.message || 'Save failed';
       setError(msg);
     }
   };
@@ -92,7 +86,7 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
             <select
               aria-label="Initiative"
               value={form.initiativeId || ''}
-              onChange={(e) => setForm({ ...form, initiativeId: e.target.value, milestoneId: '' })}
+              onChange={(e) => setForm({ ...form, initiativeId: e.target.value })}
               style={inputStyle}
             >
               <option value="">-- Select Initiative --</option>
@@ -135,17 +129,20 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Priority</label>
             <select
               aria-label="Priority"
-              value={form.priority || 'MEDIUM'}
+              value={form.priority}
               onChange={(e) => setForm({ ...form, priority: e.target.value })}
               style={inputStyle}
             >
-              {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => <option key={p} value={p}>{p}</option>)}
+              {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
             </select>
           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Estimated workload capacity must be a positive count.</label>
             <input
               type="number"
+              placeholder="40"
               value={form.estimatedHours || ''}
               onChange={(e) => setForm({ ...form, estimatedHours: e.target.value })}
               style={inputStyle}
@@ -155,6 +152,7 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Due Date</label>
             <input
               type="date"
+              placeholder="YYYY-MM-DD"
               value={form.dueDate || ''}
               onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
               style={inputStyle}
@@ -171,13 +169,30 @@ export default function ProjectTaskForm({ existing, onClose, isOpen }) {
           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 13, marginBottom: 4 }}>Status</label>
-            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} style={inputStyle}>
-              {['PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'].map((s) => <option key={s}>{s}</option>)}
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              style={inputStyle}
+            >
+              {['PENDING', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'].map((s) => (
+                <option key={s}>{s}</option>
+              ))}
             </select>
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onClose} style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer' }}>Cancel</button>
-            <button type="submit" style={{ padding: '8px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Save</button>
+            <button
+              type="button"
+              onClick={() => onClose && onClose()}
+              style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{ padding: '8px 16px', background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+            >
+              Save
+            </button>
           </div>
         </form>
       </div>
