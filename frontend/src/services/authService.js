@@ -6,6 +6,9 @@ const authService = {
   logout: () => {
     localStorage.removeItem('taskguard_token');
     localStorage.removeItem('taskguard_user');
+    localStorage.removeItem('taskguard_role');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
   },
 };
 

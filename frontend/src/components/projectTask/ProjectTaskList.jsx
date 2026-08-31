@@ -14,14 +14,15 @@ export default function ProjectTaskList({ onEdit, onNew }) {
   const [status, setStatus] = useState('ALL');
   const [notice, setNotice] = useState(null);
 
-  const getTaskData = projectTaskService.getTasks || ((params) => projectTaskService.getAll(undefined, params.status, params.query, params.page, params.size));
+  const getTaskData = projectTaskService.getTasks || projectTaskService.getAll;
   const removeTaskData = projectTaskService.deleteTask || projectTaskService.remove;
   const changeTaskStatus = projectTaskService.updateTaskStatus || ((id, nextStatus) => projectTaskService.update(id, { status: nextStatus }));
 
   const fetchData = async () => {
     try {
       const response = await getTaskData({ query, status, page: 0, size: 20 });
-      dispatch(setTasks(response?.data ?? response));
+      const payload = response?.data ?? response;
+      dispatch(setTasks(payload));
     } catch (err) {
       if (err?.response?.status === 401) {
         localStorage.removeItem('taskguard_token');

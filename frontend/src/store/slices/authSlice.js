@@ -9,15 +9,46 @@ export const loginUser = createAsyncThunk('auth/login', async (credentials, { re
   }
 });
 
+const normalizeUser = (user) => {
+  if (!user || typeof user !== 'object') return null;
+
+  const normalized = {
+    ...user,
+    fullName: user.fullName || user.name || '',
+    email: user.email || '',
+    domainRole: user.domainRole || user.role || null,
+  };
+
+  return normalized;
+};
+
 const getStoredUser = () => {
   try {
-    const user = JSON.parse(localStorage.getItem('taskguard_user') || 'null');
-    if (user) return user;
+    const stored = JSON.parse(localStorage.getItem('taskguard_user') || 'null');
+    if (stored) return normalizeUser(stored);
   } catch (err) {
     // ignore malformed storage data
   }
-  const role = localStorage.getItem('taskguard_role');
+
+  const role = localStorage.getItem('taskguard_role') || localStorage.getItem('role');
   return role ? { domainRole: role } : null;
+};
+
+const persistAuthState = (token, user) => {
+  const normalized = normalizeUser(user);
+
+  if (token) {
+    localStorage.setItem('taskguard_token', token);
+    localStorage.setItem('token', token);
+  }
+
+  if (normalized) {
+    localStorage.setItem('taskguard_user', JSON.stringify(normalized));
+    if (normalized.domainRole) {
+      localStorage.setItem('taskguard_role', normalized.domainRole);
+      localStorage.setItem('role', normalized.domainRole);
+    }
+  }
 };
 
 const authSlice = createSlice({
@@ -38,27 +69,17 @@ const authSlice = createSlice({
     loginSuccess(state, action) {
       const payload = action.payload || {};
       const token = payload.token || payload.accessToken || null;
-      const user = payload.user || {
+      const user = normalizeUser(payload.user || {
         id: payload.id,
         email: payload.email,
         fullName: payload.fullName || payload.name,
         domainRole: payload.domainRole || payload.role,
-      };
+      });
       state.loading = false;
       state.token = token;
       state.user = user;
       state.isAuthenticated = Boolean(token);
-      if (token) {
-        localStorage.setItem('taskguard_token', token);
-        localStorage.setItem('token', token);
-      }
-      if (user) {
-        localStorage.setItem('taskguard_user', JSON.stringify(user));
-        if (user.domainRole) {
-          localStorage.setItem('taskguard_role', user.domainRole);
-          localStorage.setItem('role', user.domainRole);
-        }
-      }
+      persistAuthState(token, user);
     },
     loginFailure(state, action) {
       state.loading = false;
@@ -86,29 +107,18 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         const payload = action.payload || {};
         const token = payload.token || payload.accessToken || null;
-        const user = payload.user || {
+        const user = normalizeUser(payload.user || {
           id: payload.id,
           email: payload.email,
           fullName: payload.fullName || payload.name,
           domainRole: payload.domainRole || payload.role,
-        };
+        });
 
         state.loading = false;
         state.token = token;
         state.user = user;
         state.isAuthenticated = Boolean(token);
-
-        if (token) {
-          localStorage.setItem('taskguard_token', token);
-          localStorage.setItem('token', token);
-        }
-        if (user) {
-          localStorage.setItem('taskguard_user', JSON.stringify(user));
-          if (user.domainRole) {
-            localStorage.setItem('taskguard_role', user.domainRole);
-            localStorage.setItem('role', user.domainRole);
-          }
-        }
+        persistAuthState(token, user);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
